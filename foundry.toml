@@ -1,0 +1,32 @@
+# Profiles
+
+[profile.default]
+src = "contracts"
+out = "out"
+solc_version = "0.8.28"
+optimizer = true
+optimizer_runs = 200
+via_ir = true
+remappings = [
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "forge-std/=lib/forge-std/src/",
+]
+
+[profile.lite]
+optimizer = false
+via_ir = false
+solc_version = "0.8.28"
+
+[profile.ci]
+# CI runs full test suite with deeper fuzzing
+# For fuzz/invariant tuning, pass CLI flags: forge test --fuzz-runs 10000
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md
+
+[rpc_endpoints]
+polygon_amoy = "${POLYGON_AMOY_RPC_URL}"
+polygon_mainnet = "${POLYGON_MAINNET_RPC_URL}"
+
+[etherscan]
+polygon_amoy = { key = "${POLYGONSCAN_API_KEY}" }
+polygon_mainnet = { key = "${POLYGONSCAN_API_KEY}" }

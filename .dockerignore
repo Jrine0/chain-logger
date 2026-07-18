@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+.npm
+
+# Build outputs
+.next
+out
+dist
+
+# Foundry
+contracts/out
+cache
+broadcast
+lib
+script/cache
+
+# Environment
+.env*.local
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docs
+*.md
+!README.md
+
+# Misc
+*.log
+coverage
+typechain
