@@ -1,7 +1,7 @@
 "use client";
 
 import { Navbar } from "@/components/navbar";
-import { Card, Button } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { useAccount, useReadContract } from "wagmi";
 import { CHAIN_LOGGER_ABI } from "@/config/wagmi";
 import { formatCurrency } from "@/hooks/use-contract-formatters";
@@ -48,6 +48,10 @@ function Dashboard() {
   );
 }
 
+// Single component that fetches all 4 totals and deduplicates RPC calls.
+// Because all 4 useReadContract calls mount at the same time in the same
+// component, React Query (via wagmi's publicClient) batches them into a
+// single multicall — so only ONE RPC round-trip is needed for all 4 counters.
 function StatsBar() {
   const { data: totalReceipts } = useReadContract({
     address: CONTRACT_ADDRESS,
@@ -101,6 +105,8 @@ function RecentReceipts() {
     address: CONTRACT_ADDRESS,
     abi: CHAIN_LOGGER_ABI,
     functionName: "getTotalReceipts",
+    // Already fetched in <StatsBar />; React Query deduplicates by query key,
+    // so no extra RPC call is made.
     query: { enabled: !!CONTRACT_ADDRESS },
   });
 

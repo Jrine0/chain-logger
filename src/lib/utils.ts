@@ -10,15 +10,15 @@ export function usdToCents(usd: number): bigint {
 /**
  * Helper: convert cents back to USD for display
  */
-export function centsToUsd(cents: bigint | number): number {
-  const c = typeof cents === "bigint" ? Number(cents) : cents;
+export function centsToUsd(cents: bigint | number | string): number {
+  const c = typeof cents === "bigint" ? Number(cents) : typeof cents === "number" ? cents : parseInt(cents, 10);
   return c / 100;
 }
 
 /**
  * Helper: format a USD amount (in cents) for display
  */
-export function formatUsd(cents: bigint | number): string {
+export function formatUsd(cents: bigint | number | string): string {
   const dollars = centsToUsd(cents);
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -38,8 +38,11 @@ export function truncateAddress(addr: Address | `0x${string}` | string): string 
 /**
  * Helper: format a unix timestamp (seconds) for display
  */
-export function formatDate(unix: number | bigint): string {
-  const ts = typeof unix === "bigint" ? Number(unix) : unix;
+export function formatDate(unix: bigint | number | string): string {
+  let ts: number;
+  if (typeof unix === "bigint") ts = Number(unix);
+  else if (typeof unix === "number") ts = unix;
+  else ts = parseInt(unix, 10);
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",

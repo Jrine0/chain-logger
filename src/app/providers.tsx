@@ -7,9 +7,10 @@ import { config } from "@/config/wagmi";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60_000,
-      refetchInterval: 60_000,
-      retry: 2,
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
     },
   },
 });
@@ -19,7 +20,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         {children}
-        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </QueryClientProvider>
     </WagmiProvider>
   );

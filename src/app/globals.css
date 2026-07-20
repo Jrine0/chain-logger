@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Global resets / base styles ─── */
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Reduce CLS for images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Reduce repaints on heavy hover animations */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
