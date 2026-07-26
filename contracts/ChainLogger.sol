@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 /**
  * @title ChainLogger
  * @dev Post-receipt fund transparency tracker
- * @notice Records donation receipts, fund allocations, invoices, and evidence hashes on Polygon
+ * @notice Records transaction receipts, fund allocations, invoices, and evidence hashes on Polygon
  */
 contract ChainLogger is AccessControl, Pausable, ReentrancyGuard {
 
@@ -27,9 +27,9 @@ contract ChainLogger is AccessControl, Pausable, ReentrancyGuard {
     // ─── Structs ─────────────────────────────────────────────────────
     struct Receipt {
         uint256     id;
-        address     donor;           // bank verifier / donor address
+        address     donor;           // sender address
         uint256     amountUSD;       // amount in USD cents (to avoid floats)
-        string      donorName;       // donor name
+        string      donorName;       // sender name
         string      bankReference;  // bank transaction reference
         string      bankTxHash;      // bank transaction identifier
         uint256     createdAt;
@@ -57,7 +57,7 @@ contract ChainLogger is AccessControl, Pausable, ReentrancyGuard {
         uint256   projectId;     // which project this funds
         uint256   amountUSD;     // in USD cents
         string    purpose;
-        uint256   createdAt;
+        uint256     createdAt;
         bool      exists;
     }
 
@@ -95,12 +95,22 @@ contract ChainLogger is AccessControl, Pausable, ReentrancyGuard {
         bool            exists;
     }
 
+    struct Organization {
+        uint256    id;
+        string     name;
+        string     description;
+        address    admin;
+        uint256    createdAt;
+        bool       exists;
+    }
+
     // ─── State ───────────────────────────────────────────────────────
     uint256 private _nextReceiptId;
     uint256 private _nextProjectId;
     uint256 private _nextAllocationId;
     uint256 private _nextInvoiceId;
     uint256 private _nextEvidenceId;
+    uint256 private _nextOrgId;
 
     // Per-receipt allocated totals (avoids O(n) scan in allocateFunds)
     mapping(uint256 => uint256) private _receiptAllocatedTotals;
@@ -111,11 +121,15 @@ contract ChainLogger is AccessControl, Pausable, ReentrancyGuard {
     // Per-vendor invoice index (avoids O(n) scan for vendor dashboards)
     mapping(address => uint256[]) private _vendorInvoices;
 
+    // Per-user org index (avoids O(n) scan for user dashboards)
+    mapping(address => uint256[]) private _userOrgs;
+
     mapping(uint256 => Receipt)   public receipts;
     mapping(uint256 => Project)   public projects;
     mapping(uint256 => Allocation) public allocations;
     mapping(uint256 => Invoice)   public invoices;
     mapping(uint256 => Evidence)  public evidences;
+    mapping(uint256 => Organization) public organizations;
 
     // ─── Custom Errors (gas savings vs require strings) ─────────────
     error ZeroAddress();
@@ -133,6 +147,8 @@ contract ChainLogger is AccessControl, Pausable, ReentrancyGuard {
     error InvalidHashLength();
     error EmptyString();
     error InvalidFileSize();
+    error OrgNameRequired();
+    error OrgDoesNotExist();
 
     // ─── Events ──────────────────────────────────────────────────────
     event ReceiptRecorded(
@@ -189,6 +205,12 @@ contract ChainLogger is AccessControl, Pausable, ReentrancyGuard {
         address indexed updatedBy
     );
 
+    event OrganizationCreated(
+        uint256 indexed orgId,
+        address indexed admin,
+        string name
+    );
+
     // ─── Modifiers ───────────────────────────────────────────────────
     modifier onlyExistingProject(uint256 _projectId) {
         if (!projects[_projectId].exists) revert ProjectDoesNotExist();
@@ -228,10 +250,55 @@ contract ChainLogger is AccessControl, Pausable, ReentrancyGuard {
         revokeRole(VENDOR_ROLE, _account);
     }
 
-    // ─── Step 1: Record Donation Receipt ─────────────────────────────
+    // ─── Organization Management ────────────────────────────────────
     /**
-     * @notice Records a new donation receipt after funds hit the bank account
-     * @param _donorName Name of the donor
+     * @notice Creates a new organization and grants the creator FINANCE_ROLE
+     * @param _name Organization name (required)
+     * @param _description Optional organization description
+     * @return orgId The newly created organization ID
+     */
+    function createOrganization(
+        string calldata _name,
+        string calldata _description
+    ) external whenNotPaused nonReentrant returns (uint256) {
+        if (bytes(_name).length == 0) revert OrgNameRequired();
+
+        uint256 orgId = _nextOrgId++;
+        organizations[orgId] = Organization({
+            id:          orgId,
+            name:        _name,
+            description: _description,
+            admin:       msg.sender,
+            createdAt:   block.timestamp,
+            exists:      true
+        });
+
+        _userOrgs[msg.sender].push(orgId);
+
+        // Auto-grant finance role so the org admin can immediately use the platform
+        _grantRole(FINANCE_ROLE, msg.sender);
+
+        emit OrganizationCreated(orgId, msg.sender, _name);
+        return orgId;
+    }
+
+    function getOrganization(uint256 _orgId) external view returns (Organization memory) {
+        if (!organizations[_orgId].exists) revert OrgDoesNotExist();
+        return organizations[_orgId];
+    }
+
+    function getTotalOrganizations() external view returns (uint256) {
+        return _nextOrgId;
+    }
+
+    function getUserOrganizations(address _user) external view returns (uint256[] memory) {
+        return _userOrgs[_user];
+    }
+
+    // ─── Step 1: Record Transaction Receipt ──────────────────────────
+    /**
+     * @notice Records a new transaction receipt after funds hit the bank account
+     * @param _donorName Sender name
      * @param _amountUSD Amount received in USD cents (e.g. $5000.00 = 500000)
      * @param _reference Bank transaction reference number
      * @param _bankTxHash Bank's transaction identifier

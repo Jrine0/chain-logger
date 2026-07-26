@@ -746,4 +746,73 @@ contract ChainLoggerTest is Test {
             assertTrue(foundInVendor, "Invoice missing from vendor index");
         }
     }
+
+    // ─── Organizations ──────────────────────────────────────────────
+
+    function test_UserCanCreateOrganization() public {
+        address orgAdmin = makeAddr("orgAdmin");
+        vm.prank(orgAdmin);
+
+        uint256 orgId = chainLogger.createOrganization("Acme Foundation", "Transparency in action");
+        assertEq(orgId, 0);
+        assertEq(chainLogger.getTotalOrganizations(), 1);
+
+        ChainLogger.Organization memory org = chainLogger.getOrganization(0);
+        assertEq(org.name, "Acme Foundation");
+        assertEq(org.description, "Transparency in action");
+        assertEq(org.admin, orgAdmin);
+        assertTrue(org.exists);
+    }
+
+    function test_OrgCreatorGetsFinanceRole() public {
+        address orgAdmin = makeAddr("newOrgAdmin");
+        vm.prank(orgAdmin);
+
+        chainLogger.createOrganization("New Org", "");
+        assertTrue(chainLogger.hasRole(chainLogger.FINANCE_ROLE(), orgAdmin));
+    }
+
+    function test_MultipleOrganizations() public {
+        address admin1 = makeAddr("orgAdmin1");
+        address admin2 = makeAddr("orgAdmin2");
+
+        vm.prank(admin1);
+        chainLogger.createOrganization("Org One", "");
+
+        vm.prank(admin2);
+        chainLogger.createOrganization("Org Two", "");
+
+        assertEq(chainLogger.getTotalOrganizations(), 2);
+
+        uint256[] memory org1List = chainLogger.getUserOrganizations(admin1);
+        uint256[] memory org2List = chainLogger.getUserOrganizations(admin2);
+        assertEq(org1List.length, 1);
+        assertEq(org2List.length, 1);
+        assertEq(org1List[0], 0);
+        assertEq(org2List[0], 1);
+    }
+
+    function test_GetUserOrganizations() public {
+        address multiUser = makeAddr("multiUser");
+
+        vm.prank(multiUser);
+        chainLogger.createOrganization("First Org", "");
+
+        vm.prank(multiUser);
+        chainLogger.createOrganization("Second Org", "");
+
+        uint256[] memory orgs = chainLogger.getUserOrganizations(multiUser);
+        assertEq(orgs.length, 2);
+    }
+
+    function test_NonExistentOrgReverts() public {
+        vm.expectRevert(ChainLogger.OrgDoesNotExist.selector);
+        chainLogger.getOrganization(999);
+    }
+
+    function test_OrgNameCannotBeEmpty() public {
+        vm.prank(finance);
+        vm.expectRevert(ChainLogger.OrgNameRequired.selector);
+        chainLogger.createOrganization("", "");
+    }
 }

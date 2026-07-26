@@ -19,6 +19,9 @@ script/cache/
 .env.local
 .env.*.local
 
+# Runtime data (DB, temp files)
+data/
+
 # IDE
 .idea/
 .vscode/

@@ -2,8 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Global resets / base styles ─── */
+/* ─── LoveAll-inspired Design System ─────────────────────────────── */
+
 :root {
+  /* Color palette */
+  --color-maroon-700: #7B1D3D;
+  --color-maroon-800: #5C1830;
+  --color-maroon-900: #3D0F20;
+  --color-maroon-950: #2A0A15;
+
+  --color-coral-500: #E63946;
+
+  --color-gold-300: #E8C55A;
+  --color-gold-400: #D4A843;
+
+  --color-bg-primary: #FAFAFA;
+  --color-bg-secondary: #FFFFFF;
+  --color-bg-dark: #1A0A10;
+
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+
   color-scheme: light;
 }
 
@@ -12,6 +32,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
 }
 
 /* Reduce CLS for images */
@@ -20,9 +41,121 @@ img {
   height: auto;
 }
 
-/* Reduce repaints on heavy hover animations */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* ─── Custom Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c4b5fd;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a78bfa;
+}
+
+/* ─── Selection Style ─────────────────────────────────────────────── */
+::selection {
+  background-color: rgba(212, 168, 67, 0.3);
+  color: var(--color-text-primary);
+}
+
+/* ─── Animations ─────────────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: fade-in 0.6s ease-out forwards;
+}
+
+/* Stagger children */
+.stagger-children > * {
+  opacity: 0;
+  animation: fade-in 0.4s ease-out forwards;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* ─── Layout Utilities ───────────────────────────────────────────── */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-maroon {
+    background: linear-gradient(135deg, #7B1D3D 0%, #3D0F20 100%);
+  }
+
+  .gradient-gold {
+    background: linear-gradient(135deg, #E8C55A 0%, #D4A843 100%);
+  }
+
+  .gradient-hero {
+    background: linear-gradient(160deg, #7B1D3D 0%, #5C1830 40%, #2A0A15 100%);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* ─── Page Transition ─────────────────────────────────────────────── */
+.page-enter {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* ─── Trust Badge Shimmer ────────────────────────────────────────── */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }

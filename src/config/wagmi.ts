@@ -1,24 +1,22 @@
 import { createConfig, http } from "wagmi";
 import { injected, walletConnect } from "wagmi/connectors";
-import { base, polygonAmoy } from "wagmi/chains";
+import { polygon } from "wagmi/chains";
 
 /**
  * ChainLogger wagmi/viem configuration
  *
- * Deployed contract address should be set after deployment.
- * Currently targets Polygon Amoy (testnet) for development.
+ * Deployed on Polygon mainnet.
  */
 export const config = createConfig({
-  chains: [base, polygonAmoy],
+  chains: [polygon],
   connectors: [
-    injected(),  // MetaMask, Coinbase Wallet extension, Rabby, etc.
+    injected(),
     ...(process.env.NEXT_PUBLIC_WALLETCONNECT_ID
       ? [walletConnect({ projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID })]
       : []),
   ],
   transports: {
-    [base.id]: http(),
-    [polygonAmoy.id]: http(process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC || "https://rpc-amoy.polygon.technology"),
+    [polygon.id]: http(process.env.NEXT_PUBLIC_ALCHEMY_POLYGON_RPC || "https://polygon-mainnet.g.alchemy.com/v2/KTA2ulMifxQbeZmwTtzA_"),
   },
 });
 
@@ -317,7 +315,45 @@ export const CHAIN_LOGGER_ABI = [
       { name: "updatedBy", type: "address", indexed: true },
     ],
   },
-  // ─── Counters ──────────────────────────────────────────────────
+  // ─── Organizations ───────────────────────────────────────────────
+  {
+    type: "function",
+    name: "createOrganization",
+    inputs: [
+      { name: "_name", type: "string" },
+      { name: "_description", type: "string" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "getOrganization",
+    inputs: [{ name: "_orgId", type: "uint256" }],
+    outputs: [
+      { name: "id", type: "uint256" },
+      { name: "name", type: "string" },
+      { name: "description", type: "string" },
+      { name: "admin", type: "address" },
+      { name: "createdAt", type: "uint256" },
+      { name: "exists", type: "bool" },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getTotalOrganizations",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getUserOrganizations",
+    inputs: [{ name: "_user", type: "address" }],
+    outputs: [{ name: "", type: "uint256[]" }],
+    stateMutability: "view",
+  },
   {
     type: "function",
     name: "getTotalInvoices",

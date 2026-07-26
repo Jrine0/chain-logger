@@ -120,8 +120,10 @@ export function safeBigInt(value: string, fieldName: string): bigint {
 }
 
 /**
- * Helper: class name merger
+ * Helper: class name merger — joins truthy string values
  */
-export function cn(...classes: (string | false | undefined | null)[]) {
-  return classes.filter(Boolean).join(" ");
+export function cn(...classes: (string | undefined | null | number | boolean | bigint)[]): string {
+  return classes
+    .filter((c): c is string => typeof c === "string" && c.length > 0)
+    .join(" ");
 }

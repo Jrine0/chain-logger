@@ -22,17 +22,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### CI/CD
 - GitHub Actions runs 3 jobs: lint+build (Node), test (Foundry), deploy (Foundry)
-- Deploy requires secrets: `PRIVATE_KEY`, `POLYGON_AMOY_RPC_URL`, `POLYGONSCAN_API_KEY`
+- Deploy requires secrets: `PRIVATE_KEY`, `POLYGON_MAINNET_RPC_URL`, `POLYGONSCAN_API_KEY`
 
 ## Architecture
 
 ### Dual-stack: Web3 frontend + Solidity smart contract
 
-**`contracts/ChainLogger.sol`** — Solidity 0.8.28 contract for nonprofit fund transparency, deployed on Polygon.
+**`contracts/ChainLogger.sol`** — Solidity 0.8.28 contract for transparent fund tracking, deployed on Polygon.
 - Uses OpenZeppelin v5 (AccessControl, Pausable)
 - Roles: ADMIN_ROLE, FINANCE_ROLE, VENDOR_ROLE, VIEWER_ROLE
 - Data model (all stored in mapping arrays for gas efficiency):
-  - Receipts: bank deposits → donors
+  - Receipts: bank deposits → senders
   - Projects: program/initiative metadata with IPFS CID
   - Allocations: fund transfers from receipts to projects
   - Invoices: vendor billing with SHA-256 hash + IPFS CID
