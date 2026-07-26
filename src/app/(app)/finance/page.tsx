@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Navbar } from "@/components/navbar";
-import { Card, Badge, Button, Input, SectionTitle } from "@/components/ui";
+import { Card, Button } from "@/components/ui";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import Link from "next/link";
 
@@ -19,15 +19,10 @@ export default function FinancePage() {
 
   return (
     <ProtectedRoute requiredRole="finance">
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 page-enter">
+      <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Finance Portal</h1>
-          <p className="mt-2 text-gray-500">
-            Record receipts, create projects, and allocate funds.
-          </p>
+          <p className="mt-2 text-gray-500">Record receipts, create projects, and allocate funds.</p>
         </div>
 
         {/* Tab Navigation */}
@@ -85,7 +80,6 @@ export default function FinancePage() {
             </div>
           </Card>
         </div>
-      </div>
       </div>
     </ProtectedRoute>
   );

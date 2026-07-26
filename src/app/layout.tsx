@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/SupabaseAuthContext";
 
-// `display: swap` keeps text visible while the webfont loads — avoids the
-// "invisible text" flash that hurts perceived load time.
+// `display: swap` keeps text visible while the webfont loads
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {

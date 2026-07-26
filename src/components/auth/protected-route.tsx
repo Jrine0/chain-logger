@@ -1,44 +1,27 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "finance" | "vendor" | "admin" | "viewer";
+  requiredRole?: "admin" | "finance" | "vendor" | "viewer";
   fallback?: React.ReactNode;
 }
 
 export function ProtectedRoute({ children, requiredRole, fallback }: ProtectedRouteProps) {
-  const { isConnected, isLoadingRole, isFinance, isVendor, isAdmin } = useAuth();
   const router = useRouter();
-  const pathname = usePathname() || "/";
-
-  // viewer means any authenticated user is allowed
-  const isViewerOnly = requiredRole === "viewer";
+  const { isAuthenticated, isLoading, role } = useAuth();
 
   useEffect(() => {
-    if (isLoadingRole) return;
-
-    if (!isConnected) {
-      router.replace(`/auth?redirect=${encodeURIComponent(pathname)}`);
-      return;
+    if (!isLoading && !isAuthenticated) {
+      const redirectTo = encodeURIComponent(window.location.pathname);
+      router.push(`/login?redirectTo=${redirectTo}`);
     }
+  }, [isAuthenticated, isLoading, router]);
 
-    if (requiredRole && !isViewerOnly) {
-      const allowed =
-        requiredRole === "finance" ? isFinance :
-        requiredRole === "vendor" ? isVendor :
-        isAdmin;
-
-      if (!allowed) {
-        // User is authenticated but doesn't have the required role
-      }
-    }
-  }, [isConnected, isLoadingRole, isFinance, isVendor, isAdmin, requiredRole, isViewerOnly, router, pathname]);
-
-  if (isLoadingRole) {
+  if (isLoading) {
     return (
       fallback || (
         <div className="flex items-center justify-center min-h-[400px]">
@@ -48,25 +31,23 @@ export function ProtectedRoute({ children, requiredRole, fallback }: ProtectedRo
     );
   }
 
-  if (!isConnected) {
+  if (!isAuthenticated) {
     return fallback || null;
   }
 
-  if (requiredRole && !isViewerOnly) {
-    const allowed =
-      requiredRole === "finance" ? isFinance :
-      requiredRole === "vendor" ? isVendor :
-      isAdmin;
+  if (requiredRole) {
+    const roleHierarchy = ["viewer", "vendor", "finance", "admin"];
+    const requiredLevel = roleHierarchy.indexOf(requiredRole);
+    const currentLevel = roleHierarchy.indexOf(role || "viewer");
 
-    if (!allowed) {
-      const currentRole = isAdmin ? "admin" : isFinance ? "finance" : isVendor ? "vendor" : "viewer";
+    if (currentLevel < requiredLevel) {
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] text-center px-4">
           <div className="text-4xl mb-4">🔒</div>
           <h2 className="text-xl font-bold text-gray-900">Access Denied</h2>
           <p className="mt-2 text-gray-500 max-w-md">
             This area requires the <span className="font-semibold capitalize text-brand-700">{requiredRole}</span> role.
-            Your current role is <span className="font-semibold capitalize text-gold-600">{currentRole}</span>.
+            Your current role is <span className="font-semibold capitalize text-gold-600">{role}</span>.
           </p>
         </div>
       );

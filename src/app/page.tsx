@@ -1,16 +1,23 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/navbar";
-import { StatCard, Badge, Card, Button, TrustBadge, SectionTitle } from "@/components/ui";
 import Link from "next/link";
 
 export default function HomePage() {
+  const [stats, setStats] = useState({ receipts: 0, projects: 0, invoices: 0, evidence: 0 });
+
+  useEffect(() => {
+    // Public stats — no auth needed
+    // These will be populated by the data layer in later phases
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
       {/* Hero */}
-      <section className="relative overflow-hidden gradient-hero">
+      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #7B1D3D 0%, #5C1830 40%, #2A0A15 100%)' }}>
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <div className="animate-fade-in">
@@ -25,7 +32,7 @@ export default function HomePage() {
               <br />
               Every Project.
               <br />
-              <span className="bg-gradient-to-r from-yellow-300 to-yellow-400 bg-clip-text text-transparent">
+              <span style={{ background: 'linear-gradient(to right, #E8C55A, #D4A843)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
                 On Chain.
               </span>
             </h1>
@@ -37,16 +44,20 @@ export default function HomePage() {
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <Link href="/auth">
-                <Button size="lg" variant="primary">
+              <Link href="/register">
+                <span className="inline-flex items-center rounded-xl bg-gold-400 text-brand-900 font-semibold px-6 py-3 hover:bg-gold-300 transition-colors">
                   Get Started →
-                </Button>
+                </span>
+              </Link>
+              <Link href="/verify">
+                <span className="inline-flex items-center rounded-xl border border-white/20 text-white font-medium px-6 py-3 hover:bg-white/10 transition-colors">
+                  Explore Public Data
+                </span>
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Decorative elements */}
         <div className="absolute top-0 right-0 -mt-20 -mr-20 h-96 w-96 rounded-full bg-gold-400/5 blur-3xl" />
         <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-64 w-64 rounded-full bg-coral-500/5 blur-3xl" />
       </section>
@@ -65,13 +76,10 @@ export default function HomePage() {
 
       {/* How it works */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <SectionTitle
-          title="How It Works"
-          description="From bank transaction to on-chain verification in 5 steps."
-        />
+        <h2 className="text-3xl font-bold text-center text-gray-900">How It Works</h2>
+        <p className="mt-2 text-center text-gray-500">From bank transaction to on-chain verification in 5 steps.</p>
 
         <div className="relative mt-14">
-          {/* Connecting line */}
           <div className="hidden lg:block absolute top-6 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-brand-200 via-gold-300 to-brand-200" />
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5 stagger-children">
@@ -87,24 +95,21 @@ export default function HomePage() {
       {/* Stats */}
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <SectionTitle
-            title="Platform Overview"
-            description="Live metrics from the Polygon blockchain."
-          />
+          <h2 className="text-3xl font-bold text-center text-gray-900">Platform Overview</h2>
+          <p className="mt-2 text-center text-gray-500">Live metrics from the Polygon blockchain.</p>
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
-            <StatCard label="Receipts" value="—" icon="📥" subtitle="On-chain transaction records" accent="maroon" />
-            <StatCard label="Projects" value="—" icon="📁" subtitle="Active initiatives" accent="gold" />
-            <StatCard label="Invoices" value="—" icon="📄" subtitle="Processed invoices" accent="coral" />
-            <StatCard label="Evidence" value="—" icon="🔒" subtitle="SHA-256 anchored documents" accent="maroon" />
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard label="Receipts" value={stats.receipts} icon="📥" subtitle="Transaction records" accent="maroon" />
+            <StatCard label="Projects" value={stats.projects} icon="📁" subtitle="Active initiatives" accent="gold" />
+            <StatCard label="Invoices" value={stats.invoices} icon="📄" subtitle="Processed invoices" accent="coral" />
+            <StatCard label="Evidence" value={stats.evidence} icon="🔒" subtitle="Documents anchored" accent="maroon" />
           </div>
         </div>
       </section>
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl gradient-maroon px-8 py-14 text-center text-white md:px-16 shadow-xl">
-          {/* Decorative */}
+        <div className="relative overflow-hidden rounded-3xl px-8 py-14 text-center text-white shadow-xl" style={{ background: 'linear-gradient(135deg, #7B1D3D 0%, #3D0F20 100%)' }}>
           <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-gold-400/10 blur-3xl" />
           <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-white/5 blur-3xl" />
 
@@ -114,10 +119,10 @@ export default function HomePage() {
               Connect your wallet and explore the public dashboard or log in as a team member.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href="/auth">
-                <Button size="lg" variant="primary">
+              <Link href="/register">
+                <span className="inline-flex items-center rounded-xl bg-gold-400 text-brand-900 font-semibold px-6 py-3 hover:bg-gold-300 transition-colors">
                   Get Started →
-                </Button>
+                </span>
               </Link>
             </div>
           </div>
@@ -129,16 +134,15 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-700 text-white font-bold text-sm">C</span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-700 text-white font-bold text-sm">C</div>
               <span className="font-bold text-gray-900">ChainLogger</span>
             </div>
             <p className="text-sm text-gray-500">
-              Transparency on Polygon. Built with Next.js, Wagmi, Viem & Foundry.
+              Transparency on Polygon. Built with Next.js, Supabase, Wagmi, Viem & Foundry.
             </p>
             <div className="flex items-center gap-6">
-              <Link href="/verify" className="text-sm text-gray-500 hover:text-brand-700 transition-colors">
-                Verify
-              </Link>
+              <Link href="/verify" className="text-sm text-gray-500 hover:text-brand-700 transition-colors">Verify</Link>
+              <Link href="/login" className="text-sm text-gray-500 hover:text-brand-700 transition-colors">Sign In</Link>
             </div>
           </div>
           <div className="mt-8 border-t border-gray-100 pt-6 text-center">
@@ -155,13 +159,42 @@ export default function HomePage() {
 function FlowStep({ step, title, description }: { step: number; title: string; description: string }) {
   return (
     <div className="relative flex flex-col items-center text-center">
-      {/* Number circle */}
       <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-brand-700 text-lg font-bold text-white shadow-lg shadow-brand-700/20 ring-4 ring-white">
         {step}
       </div>
-
       <h3 className="mt-4 text-base font-semibold text-gray-900">{title}</h3>
       <p className="mt-1.5 text-sm text-gray-500 leading-relaxed max-w-[200px]">{description}</p>
+    </div>
+  );
+}
+
+function TrustBadge({ icon, label }: { icon: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2 text-sm text-gray-600">
+      <span>{icon}</span>
+      <span className="font-medium">{label}</span>
+    </div>
+  );
+}
+
+function StatCard({ label, value, icon, subtitle, accent }: { label: string; value: number; icon: string; subtitle: string; accent: string }) {
+  const colors: Record<string, string> = {
+    maroon: "bg-brand-50 text-brand-700",
+    gold: "bg-gold-100 text-gold-700",
+    coral: "bg-coral-50 text-coral-500",
+  };
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow">
+      <div className="flex items-center gap-3">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg ${colors[accent] || colors.maroon}`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">{label}</p>
+          <p className="text-xl font-bold text-gray-900">{value.toLocaleString()}</p>
+          <p className="text-xs text-gray-400">{subtitle}</p>
+        </div>
+      </div>
     </div>
   );
 }

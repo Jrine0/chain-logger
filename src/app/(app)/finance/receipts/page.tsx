@@ -1,19 +1,51 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/navbar";
-import { Card, Badge, Button, Input, StatCard } from "@/components/ui";
-import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { CHAIN_LOGGER_ABI } from "@/config/wagmi";
 import { formatUsd, formatDate, usdToCents, validateRequired } from "@/lib/utils";
-import Link from "next/link";
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import { Navbar } from "@/components/navbar";
+import { Card, Badge, Button, Input, StatCard } from "@/components/ui";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}` | undefined;
 const PAGE_SIZE = 10;
 
 const statusColors: Record<string, "info" | "success" | "danger"> = { "0": "info", "1": "success", "2": "danger" };
 const statusLabels: Record<string, string> = { "0": "Recorded", "1": "Allocated", "2": "Refunded" };
+
+export default function ReceiptsPage() {
+  const { data: total } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CHAIN_LOGGER_ABI,
+    functionName: "getTotalReceipts",
+    query: { enabled: !!CONTRACT_ADDRESS, refetchInterval: 30_000 },
+  });
+
+  return (
+    <ProtectedRoute requiredRole="finance">
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 page-enter">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Receipts</h1>
+            <p className="mt-1 text-gray-500">
+              {total ? Number(total) : 0} receipt{(Number(total) || 0) !== 1 ? "s" : ""} on-chain.
+            </p>
+          </div>
+
+          {total && Number(total) > 0 && (
+            <div className="mb-8">
+              <StatCard label="Total Receipts" value={Number(total)} icon="📥" accent="maroon" />
+            </div>
+          )}
+
+          <ReceiptTable count={total ? Number(total) : 0} />
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+}
 
 function ReceiptTable({ count }: { count: number }) {
   const [page, setPage] = useState(0);
@@ -42,8 +74,10 @@ function ReceiptTable({ count }: { count: number }) {
       const name = validateRequired(form.senderName, "Sender name");
       const ref = validateRequired(form.bankReference, "Bank reference");
       const amt = BigInt(usdToCents(parseFloat(form.amount) || 0));
+      if (!CONTRACT_ADDRESS) { setError("Contract address not configured."); return; }
+      const addr = CONTRACT_ADDRESS!;
       writeContract({
-        address: CONTRACT_ADDRESS as `0x${string}`,
+        address: addr,
         abi: CHAIN_LOGGER_ABI,
         functionName: "recordReceipt",
         args: [name, amt, ref, "web3-submission"],
@@ -176,43 +210,5 @@ function ReceiptRow({ id }: { id: number }) {
         <Badge variant={statusColors[String(status)]}>{statusLabels[String(status)]}</Badge>
       </td>
     </tr>
-  );
-}
-
-export default function ReceiptsPage() {
-  const { data: total } = useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: CHAIN_LOGGER_ABI,
-    functionName: "getTotalReceipts",
-    query: { enabled: !!CONTRACT_ADDRESS, refetchInterval: 30_000 },
-  });
-
-  return (
-    <ProtectedRoute requiredRole="finance">
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 page-enter">
-          <div className="mb-8 flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Receipts</h1>
-              <p className="mt-1 text-gray-500">
-                {total ? Number(total) : 0} receipt{(Number(total) || 0) !== 1 ? "s" : ""} on-chain.
-              </p>
-            </div>
-            <Link href="/finance" className="text-sm text-red-700 hover:text-red-800 font-medium">
-              ← Back to Finance
-            </Link>
-          </div>
-
-          {total && Number(total) > 0 && (
-            <div className="mb-8">
-              <StatCard label="Total Receipts" value={Number(total)} icon="📥" accent="maroon" />
-            </div>
-          )}
-
-          <ReceiptTable count={total ? Number(total) : 0} />
-        </div>
-      </div>
-    </ProtectedRoute>
   );
 }

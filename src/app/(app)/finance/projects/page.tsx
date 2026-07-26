@@ -1,16 +1,36 @@
 "use client";
 
-import { Navbar } from "@/components/navbar";
-import { Card, Button, Input, Textarea } from "@/components/ui";
-import { useAccount, useWriteContract, useReadContract } from "wagmi";
+import { useState } from "react";
+import { useWriteContract, useReadContract } from "wagmi";
 import { CHAIN_LOGGER_ABI } from "@/config/wagmi";
 import { validateRequired } from "@/lib/utils";
-import { useState } from "react";
+import { Navbar } from "@/components/navbar";
+import { Card, Button, Input } from "@/components/ui";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}` | undefined;
 
+export default function ProjectsPage() {
+  return (
+    <ProtectedRoute requiredRole="finance">
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
+            <p className="mt-1 text-gray-500">Create and manage transparency-tracked projects.</p>
+          </div>
+          <div className="grid gap-8 lg:grid-cols-2">
+            <CreateProjectForm />
+            <ProjectList />
+          </div>
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+}
+
 function CreateProjectForm() {
-  const { isConnected } = useAccount();
   const { data: hash, writeContract, isPending } = useWriteContract();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -18,29 +38,21 @@ function CreateProjectForm() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isConnected) {
-    return (
-      <Card className="text-center">
-        <p className="text-gray-500">Connect your wallet as a Finance team member.</p>
-      </Card>
-    );
-  }
-
-  if (!CONTRACT_ADDRESS) {
-    return <Card><p className="text-red-600">Contract address not configured.</p></Card>;
-  }
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!CONTRACT_ADDRESS) {
+      setError("Contract address not configured.");
+      return;
+    }
 
     try {
       const n = validateRequired(name, "Project name");
       const desc = description.trim();
       const cid = validateRequired(ipfsCid, "IPFS CID");
-
       writeContract({
-        address: CONTRACT_ADDRESS,
+        address: CONTRACT_ADDRESS!,
         abi: CHAIN_LOGGER_ABI,
         functionName: "createProject",
         args: [n, desc, cid],
@@ -75,7 +87,7 @@ function CreateProjectForm() {
       <h3 className="text-lg font-semibold text-gray-900">Create New Project</h3>
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         <Input label="Project Name" value={name} onChange={(e) => { setName(e.target.value); setError(null); }} required />
-        <Textarea label="Description" value={description} onChange={(e) => { setDescription(e.target.value); setError(null); }} rows={3} />
+        <Input label="Description" value={description} onChange={(e) => { setDescription(e.target.value); setError(null); }} />
         <Input label="Project Document IPFS CID" value={ipfsCid} onChange={(e) => { setIpfsCid(e.target.value); setError(null); }} required />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" disabled={isPending}>{isPending ? "Creating..." : "Create Project"}</Button>
@@ -101,23 +113,5 @@ function ProjectList() {
       {count === 0 && <p className="mt-2 text-sm text-gray-500">No projects created yet.</p>}
       <p className="mt-2 text-sm text-gray-400">Projects appear here once created on-chain.</p>
     </Card>
-  );
-}
-
-export default function ProjectsPage() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="mx-auto max-w-5xl px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Project Management</h1>
-          <p className="mt-1 text-gray-500">Create and manage transparency-tracked projects.</p>
-        </div>
-        <div className="grid gap-8 lg:grid-cols-2">
-          <CreateProjectForm />
-          <ProjectList />
-        </div>
-      </div>
-    </div>
   );
 }
