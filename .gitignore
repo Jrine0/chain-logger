@@ -16,6 +16,7 @@ broadcast/
 script/cache/
 
 # Environment
+.env
 .env.local
 .env.*.local
 
