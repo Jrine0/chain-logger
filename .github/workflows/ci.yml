@@ -34,7 +34,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          toolchain_version: "stable"
+          version: "stable"
 
       - name: Build contract
         run: forge build
@@ -52,7 +52,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          toolchain_version: "stable"
+          version: "stable"
 
       - name: Build contract
         run: forge build
