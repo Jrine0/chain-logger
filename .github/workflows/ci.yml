@@ -59,11 +59,11 @@ jobs:
 
       - name: Deploy to Polygon Amoy
         env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           POLYGONSCAN_API_KEY: ${{ vars.POLYGONSCAN_API_KEY }}
         run: |
           forge script script/Deploy.s.sol:Deploy \
             --rpc-url ${{ vars.POLYGON_AMOY_RPC_URL }} \
-            --private-key ${{ secrets.PRIVATE_KEY }} \
             --broadcast \
             --verify \
             --etherscan-api-key ${{ vars.POLYGONSCAN_API_KEY }} \
